@@ -1,116 +1,127 @@
 {
-  "name": "git-plus",
-  "main": "./lib/git-plus",
-  "version": "8.7.1",
-  "description": "Do git things without the terminal",
+  "name": "git-command",
+  "author": "lumine-code",
+  "version": "1.0.0",
+  "main": "./lib/main",
+  "description": "Run common Git workflows from a searchable command palette.",
+  "repository": "https://github.com/lumine-code/git-command",
+  "bugs": {
+    "url": "https://github.com/lumine-code/git-command/issues"
+  },
   "keywords": [
-    "git"
+    "version-control",
+    "vcs",
+    "commit",
+    "branch",
+    "staging",
+    "repository",
+    "diff",
+    "blame"
   ],
-  "providedServices": {
-    "git-plus": {
-      "description": "Execute git commands",
-      "versions": {
-        "1.0.0": "provideService"
-      }
+  "license": "MIT",
+  "files": [
+    "keymaps",
+    "lib",
+    "menus",
+    "styles"
+  ],
+  "engines": {
+    "atom": ">=1.132.1 <2.0.0"
+  },
+  "backgroundTips": [
+    "You can open every common Git workflow with {{ 'git-command:menu' | keystroke }}"
+  ],
+  "activationCommands": {
+    "atom-workspace": [
+      "git-command:menu",
+      "git-command:status",
+      "git-command:stage-current-file",
+      "git-command:stage-all",
+      "git-command:unstage-current-file",
+      "git-command:unstage-all",
+      "git-command:commit",
+      "git-command:stage-all-and-commit",
+      "git-command:quick-commit-current-file",
+      "git-command:amend",
+      "git-command:diff-current-file",
+      "git-command:diff-all",
+      "git-command:log",
+      "git-command:log-current-file",
+      "git-command:blame-current-file",
+      "git-command:open-changed-files",
+      "git-command:restore-current-file",
+      "git-command:checkout",
+      "git-command:new-branch",
+      "git-command:merge",
+      "git-command:rebase",
+      "git-command:cherry-pick",
+      "git-command:fetch",
+      "git-command:fetch-all",
+      "git-command:pull",
+      "git-command:push",
+      "git-command:stash",
+      "git-command:manage-stashes",
+      "git-command:run"
+    ]
+  },
+  "configSchema": {
+    "protectedBranches": {
+      "title": "Protected branches",
+      "description": "Branch names on which guarded commit and push actions are blocked.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "main",
+        "master"
+      ]
+    },
+    "protectCommits": {
+      "title": "Protect commits",
+      "description": "Block commit workflows on protected branches.",
+      "type": "boolean",
+      "default": true
+    },
+    "protectPushes": {
+      "title": "Protect pushes",
+      "description": "Block pushes from protected branches.",
+      "type": "boolean",
+      "default": true
+    },
+    "pullRebase": {
+      "title": "Rebase when pulling",
+      "description": "Pass --rebase to pull operations.",
+      "type": "boolean",
+      "default": false
+    },
+    "stashIncludeUntracked": {
+      "title": "Stash untracked files",
+      "description": "Include untracked files when creating a stash.",
+      "type": "boolean",
+      "default": true
+    },
+    "logLimit": {
+      "title": "Log entry limit",
+      "description": "Maximum number of commits shown by log and cherry-pick workflows.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 50
     }
   },
   "scripts": {
-    "test": "eslint --fix \"lib/**/*.js\" \"spec/**/*.js\" && apm test",
-    "debug": "atom-transpiler-debug-tool"
-  },
-  "deserializers": {
-    "git-plus/output-view": "deserializeOutputView"
-  },
-  "consumedServices": {
-    "status-bar": {
-      "versions": {
-        "^1.0.0": "consumeStatusBar"
-      }
-    },
-    "autosave": {
-      "versions": {
-        "1.0.0": "consumeAutosave"
-      }
-    },
-    "tree-view": {
-      "versions": {
-        "1.0.0": "consumeTreeView"
-      }
-    }
-  },
-  "repository": "https://github.com/akonwi/git-plus",
-  "license": "MIT",
-  "engines": {
-    "atom": ">= 1.28"
-  },
-  "prettier": {
-    "printWidth": 100
-  },
-  "atomTranspilers": [
-    {
-      "glob": "{lib,spec}/**/*.js",
-      "transpiler": "atom-babel6-transpiler",
-      "options": {
-        "babel": {
-          "presets": [
-            "env",
-            "react"
-          ],
-          "plugins": [
-            "transform-object-rest-spread",
-            [
-              "transform-class-properties",
-              {
-                "spec": true
-              }
-            ]
-          ],
-          "babelrc": false
-        }
-      }
-    },
-    {
-      "transpiler": "atom-ts-transpiler",
-      "glob": "{!(node_modules)/**/,}*.ts?(x)",
-      "options": {
-        "compilerOptions": {},
-        "cacheKeyFiles": [],
-        "verbose": false
-      }
-    }
-  ],
-  "dependencies": {
-    "@babel/polyfill": "^7.0.0-beta.51",
-    "@types/atom": "^1.31.0",
-    "@types/react": "^16.7.13",
-    "ansi-to-html": "^0.4.1",
-    "atom-babel6-transpiler": "^1.2.0",
-    "atom-notify": "^1.1.0",
-    "atom-select-list": "^0.7.1",
-    "atom-space-pen-views": "^2.0.3",
-    "atom-ts-transpiler": "^1.5.2",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-react": "^6.24.1",
-    "classnames": "^2.2.6",
-    "fs-plus": "^2.2.0",
-    "fuzzaldrin": "^1.2.0",
-    "linkify-urls": "^2.0.0",
-    "node-emoji": "^1.8.1",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
-    "typescript": "^3.2.2",
-    "underscore-plus": "^1.6.6"
+    "test": "lumine --test spec",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "atom-transpiler-debug-tool": "^1.0.5",
-    "babel-eslint": "^8.2.5",
-    "eslint": "^5.0.1",
-    "eslint-plugin-react": "^7.10.0",
-    "lint": "^1.1.2",
-    "prettier": "^1.13.6",
-    "quibble": "^0.3.0",
-    "tslint": "^5.11.0"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.2.2",
+    "globals": "^17.8.0",
+    "prettier": "^3.9.6"
   }
 }

@@ -1,0 +1,8 @@
+{
+  ".platform-darwin": {
+    "cmd-shift-h": "git-command:menu"
+  },
+  ".platform-win32, .platform-linux": {
+    "ctrl-shift-h": "git-command:menu"
+  }
+}

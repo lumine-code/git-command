@@ -1,0 +1,59 @@
+.git-command-palette .git-command-action,
+.git-command-select .git-command-action {
+  align-items: center;
+}
+
+.git-command-preview {
+  box-sizing: border-box;
+  max-height: min(45vh, 32rem);
+  margin: var(--component-padding, 10px) 0 0;
+  padding: var(--component-padding, 10px);
+  overflow: auto;
+  border: 1px solid var(--base-border-color);
+  border-radius: var(--component-border-radius, 3px);
+  background: var(--inset-panel-background-color);
+  color: var(--text-color);
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-font-size);
+  white-space: pre;
+}
+
+.git-command-preview:empty {
+  display: none;
+}
+
+.git-command-output {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--pane-item-background-color);
+  color: var(--text-color);
+}
+
+.git-command-output header {
+  display: flex;
+  align-items: center;
+  gap: var(--component-padding, 10px);
+  padding: var(--component-padding, 10px);
+  border-bottom: 1px solid var(--base-border-color);
+  background: var(--tool-panel-background-color);
+}
+
+.git-command-output header strong {
+  flex: 1;
+}
+
+.git-command-output pre {
+  flex: 1;
+  box-sizing: border-box;
+  min-height: 0;
+  margin: 0;
+  padding: var(--component-padding, 10px);
+  overflow: auto;
+  color: inherit;
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-font-size);
+  line-height: var(--editor-line-height);
+  white-space: pre;
+  user-select: text;
+}

@@ -1,0 +1,28 @@
+{
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Git Command",
+          "submenu": [
+            { "label": "Menu", "command": "git-command:menu" },
+            { "type": "separator" },
+            { "label": "Status", "command": "git-command:status" },
+            { "label": "Commit", "command": "git-command:commit" },
+            {
+              "label": "Quick Commit Current File",
+              "command": "git-command:quick-commit-current-file"
+            },
+            { "label": "Diff All", "command": "git-command:diff-all" },
+            { "label": "Log", "command": "git-command:log" },
+            { "type": "separator" },
+            { "label": "Pull", "command": "git-command:pull" },
+            { "label": "Push", "command": "git-command:push" },
+            { "label": "Run", "command": "git-command:run" }
+          ]
+        }
+      ]
+    }
+  ]
+}

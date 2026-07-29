@@ -1,120 +1,71 @@
-# Git-Plus package ![Build Status](https://travis-ci.org/akonwi/git-plus.svg?branch=master)
+# git-command
 
-[![forthebadge](http://forthebadge.com/images/badges/uses-git.svg)](http://forthebadge.com)
+Run common Git workflows from a searchable command palette.
 
-vim-fugitive like package for atom. make commits and other git things without the terminal
+The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ideas from `mauricioszabo/simple-git`.
 
-![A screenshot of your spankin' package](https://raw.githubusercontent.com/akonwi/git-plus/master/commit.gif)
+## Features
 
-## Usage
+- **Searchable palette**: find common repository actions from one compact list.
+- **Central execution**: use Lumine's repository registry, operation queue, authentication, and bundled Git.
+- **Guided workflows**: choose branches, remotes, commits, and stashes through modal flows.
+- **Commit previews**: review staged or current-file changes before entering a commit message.
+- **Repository reports**: inspect status, diffs, history, and blame in reusable output panes.
+- **Protected branches**: block commits and pushes on configured branch names.
+- **File actions**: stage, unstage, restore, or open changed files from the active repository.
+- **Git fallback**: run an arbitrary argument line when a specialized action is not available.
 
-# IMPORTANT:
+## Installation
 
-Make sure your gitconfig file is configured. You must configure at least the `user.email` and `user.name` variables.
+To install `git-command` search for _git-command_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/git-command`.
 
-Also, the package currently favors an ssh setup that doesn't expect to be prompted for credentials in order to push/pull, .etc. Github has a guide to help you set that up [here](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)
+## Commands
 
-If you are on a Windows machine, I recommend checking out [this thread](https://github.com/akonwi/git-plus/issues/224) if you have issues pushing/pulling from a remote repository with this package. I also don't have the means to do my own user testing in a windows environment so I won't be immediately able to help troubleshoot windows problems.
+Commands available in `atom-workspace`:
 
-### Showing the Git-Plus Palette
+- `git-command:menu`: open the searchable Git action palette,
+- `git-command:status`: show repository status,
+- `git-command:stage-current-file`: stage the active file,
+- `git-command:stage-all`: stage every change,
+- `git-command:unstage-current-file`: unstage the active file,
+- `git-command:unstage-all`: unstage every staged change,
+- `git-command:commit`: preview and commit staged changes,
+- `git-command:stage-all-and-commit`: stage all changes, preview them, and commit,
+- `git-command:quick-commit-current-file`: preview, stage, and commit the active file,
+- `git-command:amend`: preview staged changes and amend the latest commit,
+- `git-command:diff-current-file`: show the active file's staged and unstaged changes,
+- `git-command:diff-all`: show every staged and unstaged change,
+- `git-command:log`: show recent repository history,
+- `git-command:log-current-file`: show recent history for the active file,
+- `git-command:blame-current-file`: show blame information for the active file,
+- `git-command:open-changed-files`: open all changed files,
+- `git-command:restore-current-file`: restore the active file from `HEAD`,
+- `git-command:checkout`: choose and check out a local branch,
+- `git-command:new-branch`: create and check out a branch,
+- `git-command:merge`: choose a local branch to merge,
+- `git-command:rebase`: choose a local branch onto which to rebase,
+- `git-command:cherry-pick`: choose a recent commit to cherry-pick,
+- `git-command:fetch`: choose a remote to fetch,
+- `git-command:fetch-all`: fetch every remote in every open repository,
+- `git-command:pull`: pull the current branch from its upstream,
+- `git-command:push`: push the current branch,
+- `git-command:stash`: create a stash with an optional message,
+- `git-command:manage-stashes`: apply, pop, or drop an existing stash,
+- `git-command:run`: run an arbitrary Git argument line.
 
-> - `Cmd-Shift-H` on MacOS
-> - `Ctrl-Shift-H` on Windows + Linux
-> - `Git Plus: Menu` on the atom command palette.
+## Customization
 
-### Push/Pull/Fetch notifications
+You can adjust the package's panes and modal content in your `styles.less`:
 
-Notifications will appear in a console output above the status bar.
-This view can be toggled by clicking the 'git+' icon in the bottom right of the status bar.
-
-![screenshot](https://dl.dropboxusercontent.com/s/lla1cba1ycxesdi/status-bar-icon.png.png)
-
-### Auto-Fetch
-
-Keeps your local repo bang up to date by automatically fetching from all remotes in the background every minute by default. But this can be set to any interval up to an hour, or disabled if you prefer. A notification can also be set to keep you informed.
-
-### Commands
-
-_Commands are accessible for keybindings by dasherizing the command title. Add your own keybindings in your ~/.atom/keymap.cson file_
-
-> Git Add == `git-plus:add`
-
-> Git Add All Commit And Push == `git-plus:add-all-commit-and-push`
-
-**Note: The following list of commands is not exhaustive. If what you want isn't a feature, you can use `Git Run` and enter the command.**
-
-| Command                       | Effect                                                                                                                                                  |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Git Run`                     | Execute a command manually by typing it **without** the git part. ex. `fetch --all`                                                                     |
-| `Git Status`                  | Show current status.                                                                                                                                    |
-| `Git Add`                     | Add the current file to the index.                                                                                                                      |
-| `Git Add All`                 | Adds all files to the index (ex. `git add .`).                                                                                                          |
-| `Git Commit`                  | Commit the staged changes. Git-Plus will show an editor for the commit message. To make the commit, save the file. To cancel the commit, close the tab. |
-| `Git Add And Commit`          | Stages the current file before preparing a commit. (`Git add all` and `Git commit` run in succession)                                                   |
-| `Git Add All and Commit`      | Stages all changes before preparing a commit. (`Git add all` and `Git commit` in succession)                                                            |
-| `Git Add And Commit And Push` | Commit currently open file and push to a remote repo.                                                                                                   |
-| `Git Add All Commit And Push` | Commit all changes and push to a remote repo.                                                                                                           |
-| `Git Commit Amend`            | Amend the previous commit.                                                                                                                              |
-| `Git Checkout Current File`   | Undo changes and reset the current file to HEAD.                                                                                                        |
-| `Git Checkout`_`[ref]`_       | Change to another ref (branch or tag).                                                                                                                  |
-| `Git Checkout New branch`     | Create a new branch.                                                                                                                                    |
-| `Git Diff [All]`              | Show the diff of the current file, or all files. The diff can either be against the staged or un-staged tree, as selected in the options.               |
-| `Git Diff Branches`           | Show the diff of the current branch against another branch.                                                                                             |
-| `Git Diff Branch Files`       | Show the diff of the current branch file against another branch version.                                                                                |
-| `Git` _`[Push⎮Pull]`_         | Push to or pull from a remote repo. If you have multiple remote repos, you can choose which to push to or pull from.                                    |
-| `Git Remove [current file]`   | `git rm` the current file or open an selector to select the files to remove. You can select multiple files at once.                                     |
-| `Git Log [Current File]`      | Show the commit history [for the current file] and show display the selected commit.                                                                    |
-| `Git Show`                    | Show the specified object, for example `HEAD`, `HEAD~2`,`3925a0d`, `origin/master` or `v2.7.3`.                                                         |
-| `Git Open Changed Files`      | Open tabs with all added, modified or renamed files.                                                                                                    |
-| `Git Tags`                    | Operate on tags individually. There are options to add, show, push, checkout, verify, and delete.                                                       |
-| `Manage Stashes`              | Similar to `Git Tags`. There are options to apply, pop, and drop.                                                                                       |
-
-### Select lists that allow selecting multiple options
-
-Commands like `Stage hunk` and `Cherry-Pick` provide a list with the ability to select multiple options.
-In this view, there are 'cancel' and 'apply/complete' buttons. The `esc` key can be used to cancel and
-the 'confirm' option can be invoked with `shift-enter` or `ctrl-enter`.
-
-### Commit Window
-
-To change where the commit window appears go to settings and find
-![screenshot](http://imgur.com/cdc7M5p.png)
-
-### Experimental Features
-
-If you would like to use experimental features, enable them in the package settings.
-
-- Custom Commands
-
-  > If enabled, you can define your own commands in your atom `init.coffee` or `init.js` file. These commands will appear in both the atom command palette as well as the Git-Plus command palette. Just like any other commands, you can define keybindings for them as well.
-
-  > Example command for undoing the last commit:
-
-  ```coffeescript
-  # In init.coffee
-  atom.packages.onDidActivateInitialPackages () ->
-  if gitPlus = atom.packages.getActivePackage('git-plus')?.mainModule.provideService()
-    gitPlus.registerCommand 'atom-text-editor', 'custom-git-commands:undo-last-commit', ->
-      gitPlus.getRepo() # If there are multiple repos in the project, you will be prompted to select which to use
-      .then (repo) -> gitPlus.run repo, 'reset HEAD~1'
-  ```
-
-  > The name of the command in the Git-plus palette will be the undasherized version of what you provided -> 'Undo Last Commit'.
-
-  > _Please beware of giving your commands the same name(undo-last-commit) as existing commands. They will appear as duplicates in the Git-plus palette._
-
-  > Check out some commands [here](https://github.com/akonwi/git-plus/wiki/Custom-Commands-Snippets)
-
-- Stage Files Beta
-  > When enabled, the 'Unstage Files' and 'Stage Files' commands will be merged into one view where the staged status of multiple files can be toggled.
+```less
+.git-command-output pre,
+.git-command-preview {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+```
 
 ## Contributing
 
-1.  Fork it
-2.  Create your feature branch (`git checkout -b my-new-feature`)
-3.  Write tests
-4.  Make your changes
-5.  Run `npm test`
-6.  Commit your changes
-7.  Push to the branch (`git push origin my-new-feature`)
-8.  Create new Pull Request
+Got ideas to make this package better, found a bug, or want to help add new features? Just drop your thoughts on GitHub. Any feedback is welcome!
