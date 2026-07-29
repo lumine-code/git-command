@@ -3,7 +3,7 @@
   "author": "lumine-code",
   "version": "1.0.0",
   "main": "./lib/main",
-  "description": "Run common Git workflows from a searchable command palette.",
+  "description": "Run common Git workflows from a searchable select list in Lumine's modal pane zone.",
   "repository": "https://github.com/lumine-code/git-command",
   "bugs": {
     "url": "https://github.com/lumine-code/git-command/issues"

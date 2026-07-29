@@ -31,7 +31,7 @@ describe("git-command", () => {
     await activation;
     main = atom.packages.getActivePackage("git-command").mainModule;
     controller = main.controller;
-    main.palette.hide();
+    main.commandList.hide();
   });
 
   afterEach(async () => {
@@ -51,11 +51,16 @@ describe("git-command", () => {
     }
   });
 
-  it("registers its commands and opens the searchable palette", () => {
+  it("registers its commands and opens the select list in a modal panel", () => {
     atom.commands.dispatch(atom.workspace.getElement(), "git-command:menu");
 
-    expect(main.palette.selectList.isVisible()).toBe(true);
-    expect(main.palette.selectList.element.textContent).toContain("Quick commit current file");
+    expect(main.commandList.selectList.isVisible()).toBe(true);
+    expect(main.commandList.selectList.getPanel().isVisible()).toBe(true);
+    expect(main.commandList.selectList.element.textContent).toContain("Quick commit current file");
+
+    const commands = atom.commands.findCommands({ target: atom.workspace.getElement() });
+    expect(commands.find(({ name }) => name === "git-command:menu").modal).toBe("Git command");
+    expect(commands.find(({ name }) => name === "git-command:commit").modal).toBe("Commit");
   });
 
   it("routes a dispatched action through the controller", () => {

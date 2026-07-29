@@ -1,12 +1,12 @@
 # git-command
 
-Run common Git workflows from a searchable command palette.
+Run common Git workflows from a searchable select list in Lumine's modal pane zone.
 
 The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ideas from `mauricioszabo/simple-git`.
 
 ## Features
 
-- **Searchable palette**: find common repository actions from one compact list.
+- **Modal command list**: find common repository actions in a select list hosted by Lumine's modal pane zone.
 - **Central execution**: use Lumine's repository registry, operation queue, authentication, and bundled Git.
 - **Guided workflows**: choose branches, remotes, commits, and stashes through modal flows.
 - **Commit previews**: review staged or current-file changes before entering a commit message.
@@ -23,7 +23,7 @@ To install `git-command` search for _git-command_ in the Install pane of the Lum
 
 Commands available in `atom-workspace`:
 
-- `git-command:menu`: open the searchable Git action palette,
+- `git-command:menu`: show the searchable Git action list in the modal pane zone,
 - `git-command:status`: show repository status,
 - `git-command:stage-current-file`: stage the active file,
 - `git-command:stage-all`: stage every change,
