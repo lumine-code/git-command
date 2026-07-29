@@ -35,6 +35,7 @@ describe("git-command", () => {
   });
 
   afterEach(async () => {
+    await atom.packages.deactivatePackage("command-palette");
     await atom.packages.deactivatePackage("git-command");
     for (const pane of atom.workspace.getPanes()) {
       for (const item of pane.getItems()) {
@@ -69,6 +70,17 @@ describe("git-command", () => {
     atom.commands.dispatch(atom.workspace.getElement(), "git-command:stage-all");
 
     expect(controller.perform).toHaveBeenCalledWith("stage-all");
+  });
+
+  it("coexists with the bundled Command Palette", async () => {
+    const activation = atom.packages.activatePackage("command-palette");
+    atom.commands.dispatch(atom.workspace.getElement(), "command-palette:toggle");
+    const commandPalette = await activation;
+    await atom.views.getNextUpdatePromise();
+
+    const list = commandPalette.mainModule.list.selectListView;
+    expect(list.isVisible()).toBe(true);
+    expect(list.props.items.some(({ name }) => name === "git-command:menu")).toBe(true);
   });
 
   it("stages the active file through repository operations", async () => {
