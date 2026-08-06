@@ -55,9 +55,9 @@ Commands available in `atom-workspace`:
 
 ## Customization
 
-You can adjust the package's panes and modal content in your `styles.less`:
+You can adjust the package's panes and modal content in your `styles.css`:
 
-```less
+```css
 .git-command-output pre,
 .git-command-preview {
   font-size: 12px;
