@@ -3,7 +3,7 @@ const n = require("eslint-plugin-n");
 const globals = require("globals");
 const prettier = require("eslint-config-prettier");
 
-const runtimeModules = ["atom"];
+const runtimeModules = ["lumine"];
 
 module.exports = [
   js.configs.recommended,
@@ -18,7 +18,7 @@ module.exports = [
       globals: {
         ...globals.browser,
         ...globals.node,
-        atom: "readonly",
+        lumine: "readonly",
       },
     },
     rules: {

@@ -33,7 +33,7 @@
     "You can open every common Git workflow with {{ 'git-command:menu' | keystroke }}"
   ],
   "activationCommands": {
-    "atom-workspace": [
+    "lumine-workspace": [
       "git-command:menu",
       "git-command:status",
       "git-command:stage-current-file",

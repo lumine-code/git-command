@@ -2,7 +2,7 @@
   // Part of the `alt-g` family, shared with git-panel (alt-g g), github-panel
   // (alt-g h), open-repository and git-diff. Space rather than a letter because
   // this is the family's own menu rather than one command in it.
-  "atom-workspace": {
+  "lumine-workspace": {
     "alt-g space": "git-command:menu"
   }
 }

@@ -21,7 +21,7 @@ To install `git-command` search for _git-command_ in the Install pane of the Lum
 
 ## Commands
 
-Commands available in `atom-workspace`:
+Commands available in `lumine-workspace`:
 
 - `git-command:menu`: show the searchable Git action list in the modal pane zone,
 - `git-command:status`: show repository status,
