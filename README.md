@@ -17,7 +17,7 @@ The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ide
 
 ## Installation
 
-To install `git-command` search for _git-command_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/git-command`.
+To install `git-command` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/git-command`.
 
 ## Commands
 
