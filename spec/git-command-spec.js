@@ -27,7 +27,7 @@ describe("git-command", () => {
     editor = await lumine.workspace.open(filePath);
     jasmine.attachToDOM(lumine.workspace.getElement());
     const activation = lumine.packages.activatePackage("git-command");
-    lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:menu");
+    lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:show-command-list");
     await activation;
     main = lumine.packages.getActivePackage("git-command").mainModule;
     controller = main.controller;
@@ -53,14 +53,16 @@ describe("git-command", () => {
   });
 
   it("registers its commands and opens the select list in a modal panel", () => {
-    lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:menu");
+    lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:show-command-list");
 
     expect(main.commandList.selectList.isVisible()).toBe(true);
     expect(main.commandList.selectList.getPanel().isVisible()).toBe(true);
     expect(main.commandList.selectList.element.textContent).toContain("Quick commit current file");
 
     const commands = lumine.commands.findCommands({ target: lumine.workspace.getElement() });
-    expect(commands.find(({ name }) => name === "git-command:menu").modal).toBe("Git command");
+    expect(commands.find(({ name }) => name === "git-command:show-command-list").modal).toBe(
+      "Git command",
+    );
     expect(commands.find(({ name }) => name === "git-command:commit").modal).toBe("Commit");
   });
 
@@ -80,7 +82,9 @@ describe("git-command", () => {
 
     const list = commandPalette.mainModule.list.selectListView;
     expect(list.isVisible()).toBe(true);
-    expect(list.props.items.some(({ name }) => name === "git-command:menu")).toBe(true);
+    expect(list.props.items.some(({ name }) => name === "git-command:show-command-list")).toBe(
+      true,
+    );
   });
 
   it("stages the active file through repository operations", async () => {

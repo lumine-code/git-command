@@ -3,6 +3,6 @@
   // (alt-g h), open-repository and git-diff. Space rather than a letter because
   // this is the family's own menu rather than one command in it.
   "lumine-workspace": {
-    "alt-g space": "git-command:menu"
+    "alt-g space": "git-command:show-command-list"
   }
 }

@@ -30,11 +30,11 @@
     "lumine": "^1.0.0"
   },
   "backgroundTips": [
-    "You can open every common Git workflow with {{ 'git-command:menu' | keystroke }}"
+    "You can open every common Git workflow with {{ 'git-command:show-command-list' | keystroke }}"
   ],
   "activationCommands": {
     "lumine-workspace": [
-      "git-command:menu",
+      "git-command:show-command-list",
       "git-command:status",
       "git-command:stage-current-file",
       "git-command:stage-all",

@@ -6,7 +6,7 @@
         {
           "label": "Git Command",
           "submenu": [
-            { "label": "Show Command List", "command": "git-command:menu" },
+            { "label": "Show Command List", "command": "git-command:show-command-list" },
             { "type": "separator" },
             { "label": "Status", "command": "git-command:status" },
             { "label": "Commit", "command": "git-command:commit" },

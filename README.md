@@ -23,7 +23,7 @@ To install `git-command` search for it in the Install pane of the Lumine setting
 
 Commands available in `lumine-workspace`:
 
-- `git-command:menu`: show the searchable Git action list in the modal pane zone,
+- `git-command:show-command-list`: show the searchable Git action list in the modal pane zone,
 - `git-command:status`: show repository status,
 - `git-command:stage-current-file`: stage the active file,
 - `git-command:stage-all`: stage every change,
