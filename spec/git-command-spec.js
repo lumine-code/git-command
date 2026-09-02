@@ -111,6 +111,21 @@ describe("git-command", () => {
     expect(output.getElement().textContent).toContain("example.txt");
   });
 
+  it("renders the staged index separately from later worktree edits", async () => {
+    editor.setText("staged\n");
+    await editor.save();
+    await repository.getOperations().stageFiles(["example.txt"]);
+    editor.setText("worktree\n");
+    await editor.save();
+
+    const text = await controller.diffText(repository, ["example.txt"]);
+
+    expect(text).toContain("Staged changes");
+    expect(text).toContain("+staged");
+    expect(text).toContain("Unstaged changes");
+    expect(text).toContain("+worktree");
+  });
+
   it("previews and quick-commits the active file", async () => {
     editor.setText("quick change\n");
     await editor.save();
