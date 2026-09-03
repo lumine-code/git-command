@@ -134,7 +134,8 @@ describe("git-command", () => {
     expect(controller.modals.preview.textContent).toContain("-initial");
     expect(controller.modals.preview.textContent).toContain("+quick change");
 
-    await controller.modals.confirmInput("Quick update");
+    await controller.modals.inputDialog.setQuery("Quick update");
+    await lumine.commands.dispatch(controller.modals.inputDialog.getElement(), "core:confirm");
 
     const result = await lumine.repositories.executeGit(
       ["log", "-1", "--format=%s"],
