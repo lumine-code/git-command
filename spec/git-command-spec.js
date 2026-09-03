@@ -60,8 +60,8 @@ describe("git-command", () => {
   it("registers its commands and opens the select list in a modal panel", () => {
     lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:show-command-list");
 
-    expect(main.commandList.selectList.isVisible()).toBe(true);
-    expect(main.commandList.selectList.getPanel().isVisible()).toBe(true);
+    expect(main.commandList.selectListHost.isVisible()).toBe(true);
+    expect(main.commandList.selectListHost.getPanel().isVisible()).toBe(true);
     expect(main.commandList.selectList.getElement().textContent).toContain(
       "Quick commit current file",
     );
@@ -95,28 +95,31 @@ describe("git-command", () => {
     await opening;
     await lumine.views.getNextUpdatePromise();
 
-    const list = commandPalette.mainModule.list.selectListView;
-    expect(list.isVisible()).toBe(true);
-    expect(list.getItems().some(({ name }) => name === "git-command:show-command-list")).toBe(true);
+    const { selectListHost, selectList } = commandPalette.mainModule.list;
+    expect(selectListHost.isVisible()).toBe(true);
+    expect(selectList.getItems().some(({ name }) => name === "git-command:show-command-list")).toBe(
+      true,
+    );
   });
 
   it("uses close and push primary actions for the two command kinds", async () => {
     const perform = spyOn(controller, "perform").and.returnValue(Promise.resolve());
+    const host = main.commandList.selectListHost;
     const list = main.commandList.selectList;
 
-    list.show();
+    host.show();
     await list.selectItemById("stage-all");
     const closed = await list.confirmSelection();
     expect(closed.action.disposition).toBe("close");
     expect(perform).toHaveBeenCalledWith("stage-all", { crumb: "Stage all" });
-    expect(list.isVisible()).toBe(false);
+    expect(host.isVisible()).toBe(false);
 
-    list.show();
+    host.show();
     await list.selectItemById("commit");
     const pushed = await list.confirmSelection();
     expect(pushed.action.disposition).toBe("push");
     expect(perform).toHaveBeenCalledWith("commit", { crumb: "Commit" });
-    expect(list.isVisible()).toBe(true);
+    expect(host.isVisible()).toBe(true);
   });
 
   it("runs a live selection through its stable item action", async () => {
@@ -135,7 +138,7 @@ describe("git-command", () => {
 
     expect(result.action.disposition).toBe("stay");
     expect(onConfirm).toHaveBeenCalledWith(item);
-    expect(list.isVisible()).toBe(false);
+    expect(controller.modals.selectListHost.isVisible()).toBe(false);
   });
 
   it("stages the active file through repository operations", async () => {
@@ -215,7 +218,7 @@ describe("git-command", () => {
     await controller.commit();
 
     expect(lumine.notifications.addWarning).toHaveBeenCalled();
-    expect(controller.modals.inputDialog.isVisible()).toBe(false);
+    expect(controller.modals.inputDialogHost.isVisible()).toBe(false);
   });
 
   it("removes its commands when deactivated", async () => {
