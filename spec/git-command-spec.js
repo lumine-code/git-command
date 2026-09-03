@@ -1,6 +1,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { ACTIONS } = require("../lib/command-list");
 
 describe("git-command", () => {
   let controller;
@@ -27,8 +28,12 @@ describe("git-command", () => {
     editor = await lumine.workspace.open(filePath);
     jasmine.attachToDOM(lumine.workspace.getElement());
     const activation = lumine.packages.activatePackage("git-command");
-    lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:show-command-list");
+    const opening = lumine.commands.dispatch(
+      lumine.workspace.getElement(),
+      "git-command:show-command-list",
+    );
     await activation;
+    await opening;
     main = lumine.packages.getActivePackage("git-command").mainModule;
     controller = main.controller;
     main.commandList.hide();
@@ -57,7 +62,13 @@ describe("git-command", () => {
 
     expect(main.commandList.selectList.isVisible()).toBe(true);
     expect(main.commandList.selectList.getPanel().isVisible()).toBe(true);
-    expect(main.commandList.selectList.element.textContent).toContain("Quick commit current file");
+    expect(main.commandList.selectList.getElement().textContent).toContain(
+      "Quick commit current file",
+    );
+    expect(main.commandList.selectList.getItems()).toEqual(jasmine.arrayWithExactContents(ACTIONS));
+    expect(
+      main.commandList.selectList.getElement().querySelectorAll(".select-list-separator").length,
+    ).toBeGreaterThan(0);
 
     const commands = lumine.commands.findCommands({ target: lumine.workspace.getElement() });
     expect(commands.find(({ name }) => name === "git-command:show-command-list").modal).toBe(
@@ -76,15 +87,55 @@ describe("git-command", () => {
 
   it("coexists with the bundled Command Palette", async () => {
     const activation = lumine.packages.activatePackage("command-palette");
-    lumine.commands.dispatch(lumine.workspace.getElement(), "command-palette:toggle");
+    const opening = lumine.commands.dispatch(
+      lumine.workspace.getElement(),
+      "command-palette:toggle",
+    );
     const commandPalette = await activation;
+    await opening;
     await lumine.views.getNextUpdatePromise();
 
     const list = commandPalette.mainModule.list.selectListView;
     expect(list.isVisible()).toBe(true);
-    expect(list.props.items.some(({ name }) => name === "git-command:show-command-list")).toBe(
-      true,
-    );
+    expect(list.getItems().some(({ name }) => name === "git-command:show-command-list")).toBe(true);
+  });
+
+  it("uses close and push primary actions for the two command kinds", async () => {
+    const perform = spyOn(controller, "perform").and.returnValue(Promise.resolve());
+    const list = main.commandList.selectList;
+
+    list.show();
+    await list.selectItemById("stage-all");
+    const closed = await list.confirmSelection();
+    expect(closed.action.disposition).toBe("close");
+    expect(perform).toHaveBeenCalledWith("stage-all", { crumb: "Stage all" });
+    expect(list.isVisible()).toBe(false);
+
+    list.show();
+    await list.selectItemById("commit");
+    const pushed = await list.confirmSelection();
+    expect(pushed.action.disposition).toBe("push");
+    expect(perform).toHaveBeenCalledWith("commit", { crumb: "Commit" });
+    expect(list.isVisible()).toBe(true);
+  });
+
+  it("runs a live selection through its stable item action", async () => {
+    const onConfirm = jasmine.createSpy("onConfirm").and.resolveTo(true);
+    const item = {
+      branch: "topic",
+      label: "topic",
+      detail: "Local branch",
+      icon: "icon-git-branch",
+    };
+
+    await controller.modals.showSelection({ items: [item], onConfirm });
+    const list = controller.modals.selectList;
+    expect(list.getSelectedItemId()).toBe("branch:topic");
+    const result = await list.confirmSelection();
+
+    expect(result.action.disposition).toBe("stay");
+    expect(onConfirm).toHaveBeenCalledWith(item);
+    expect(list.isVisible()).toBe(false);
   });
 
   it("stages the active file through repository operations", async () => {
