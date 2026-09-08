@@ -163,6 +163,7 @@ describe("git-command", () => {
     const output = lumine.workspace.getActivePaneItem();
     expect(output.getTitle()).toBe("Git Status");
     expect(output.getElement().textContent).toContain("example.txt");
+    expect(output.serialize).toBeUndefined();
   });
 
   it("renders the staged index separately from later worktree edits", async () => {
