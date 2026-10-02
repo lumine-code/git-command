@@ -63,6 +63,20 @@ describe("Git output formatters", () => {
     ).toContain("    7  abcdef01  A User  Change a line");
   });
 
+  it("reports a clean tree when the shared snapshot contains only ignored entries", () => {
+    const output = formatStatus(
+      {
+        head: { name: "main" },
+        counts: { total: 0, staged: 0, unstaged: 0, conflicted: 0 },
+        files: [{ path: "node_modules/", ignored: true }],
+      },
+      repository,
+    );
+
+    expect(output).toContain("Working tree clean.");
+    expect(output).not.toContain("node_modules");
+  });
+
   it("parses machine-formatted stash rows", () => {
     const stashes = parseStashes("stash@{0}\0two minutes ago\0On main: work\n");
     expect(stashes.length).toBe(1);

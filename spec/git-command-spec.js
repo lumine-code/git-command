@@ -181,6 +181,30 @@ describe("git-command", () => {
     expect(text).toContain("+worktree");
   });
 
+  it("opens existing changed files without opening ignored paths or directories", async () => {
+    const ignoredPath = path.join(workingDirectory, "ignored.txt");
+    fs.writeFileSync(ignoredPath, "ignored\n");
+    fs.mkdirSync(path.join(workingDirectory, "nested-repository"));
+    spyOn(repository, "ensureStatusSnapshot").and.resolveTo({
+      files: [
+        { path: "ignored.txt", ignored: true },
+        { path: "missing.txt" },
+        { path: "nested-repository" },
+        { path: "example.txt" },
+      ],
+    });
+    const open = spyOn(lumine.workspace, "open").and.resolveTo(editor);
+    const notification = spyOn(lumine.notifications, "addSuccess");
+
+    await controller.openChangedFiles();
+
+    expect(open).toHaveBeenCalledOnceWith(
+      path.join(repository.getWorkingDirectory(), "example.txt"),
+      { activatePane: false },
+    );
+    expect(notification).toHaveBeenCalledWith("Opened 1 changed file");
+  });
+
   it("previews and quick-commits the active file", async () => {
     editor.setText("quick change\n");
     await editor.save();
