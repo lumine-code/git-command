@@ -42,6 +42,7 @@ describe("git-command", () => {
   afterEach(async () => {
     await lumine.packages.deactivatePackage("command-palette");
     await lumine.packages.deactivatePackage("git-command");
+    await lumine.packages.deactivatePackage("git-panel");
     for (const pane of lumine.workspace.getPanes()) {
       for (const item of pane.getItems()) {
         await pane.destroyItem(item, { force: true });
@@ -181,6 +182,74 @@ describe("git-command", () => {
     expect(text).toContain("+worktree");
   });
 
+  for (const method of ["diffCurrentFile", "diffAll"]) {
+    it(`renders ${method} with separate snapshots in Unified and Side by Side`, async () => {
+      await lumine.packages.activatePackage("git-panel");
+      editor.setText("staged\n");
+      await editor.save();
+      await repository.getOperations().stageFiles(["example.txt"]);
+      editor.setText("worktree\n");
+      await editor.save();
+
+      await controller[method]();
+      const output = lumine.workspace.getActivePaneItem();
+      const report = output.diffReport;
+      expect(report.view.getDiffView()).toBe("unified");
+      expect(report.view.props.readOnly).toBe(true);
+      for (const mode of ["unified", "side-by-side"]) {
+        await report.view.setDiffView(mode);
+        await report.select("staged");
+        expect(report.view.props.multiFilePatch.toString()).toContain("+staged");
+        expect(report.view.props.multiFilePatch.toString()).not.toContain("+worktree");
+        await report.select("unstaged");
+        expect(report.view.props.multiFilePatch.toString()).toContain("-staged");
+        expect(report.view.props.multiFilePatch.toString()).toContain("+worktree");
+        expect(report.view.getDiffView()).toBe(mode);
+        expect(report.element.querySelectorAll("lumine-text-editor").length).toBe(
+          mode === "side-by-side" ? 2 : 1,
+        );
+      }
+      lumine.workspace.getActivePane().activateItem(editor);
+      await controller[method]();
+      expect(lumine.workspace.getActivePaneItem()).toBe(output);
+      expect(output.diffReport.selected).toBe("unstaged");
+      expect(output.diffReport.view.getDiffView()).toBe("side-by-side");
+      const staged = await lumine.repositories.executeGit(["diff", "--cached"], workingDirectory);
+      expect(staged.stdout).toContain("+staged");
+      expect(staged.stdout).not.toContain("+worktree");
+    });
+  }
+
+  it("clears visual diffs when the provider disappears while retaining the text report", async () => {
+    await lumine.packages.activatePackage("git-panel");
+    editor.setText("worktree\n");
+    await editor.save();
+    await controller.diffAll();
+    const report = lumine.workspace.getActivePaneItem().diffReport;
+    await report.view.setDiffView("side-by-side");
+    const previousPatch = report.patches.get("unstaged");
+    await lumine.packages.deactivatePackage("git-panel");
+    expect(main.gitPanel).toBeNull();
+    expect(report.view).toBeNull();
+    expect(previousPatch.isDisposed()).toBe(true);
+    expect(report.body.textContent).toContain("git-panel service is inactive");
+    expect(report.body.textContent).toContain("+worktree");
+    await lumine.packages.activatePackage("git-panel");
+    expect(report.view.getDiffView()).toBe("side-by-side");
+  });
+
+  it("does not let an obsolete provider edge clear its replacement", () => {
+    const bridge = {};
+    const first = main.consumeGitPanel(bridge);
+    const second = main.consumeGitPanel(bridge);
+    first.dispose();
+    expect(main.gitPanel).toBe(bridge);
+    expect(controller.gitPanel).toBe(bridge);
+    second.dispose();
+    expect(main.gitPanel).toBeNull();
+    expect(controller.gitPanel).toBeNull();
+  });
+
   it("opens existing changed files without opening ignored paths or directories", async () => {
     const ignoredPath = path.join(workingDirectory, "ignored.txt");
     fs.writeFileSync(ignoredPath, "ignored\n");
@@ -221,6 +290,33 @@ describe("git-command", () => {
       workingDirectory,
     );
     expect(result.stdout.trim()).toBe("Quick update");
+  });
+
+  it("uses Side by Side in the commit preview without changing the commit workflow", async () => {
+    await lumine.packages.activatePackage("git-panel");
+    editor.setText("quick change\n");
+    await editor.save();
+    await controller.quickCommitCurrentFile({ crumb: "Quick commit" });
+    const report = controller.modals.diffReport;
+    expect(report.selected).toBe("unstaged");
+    expect(report.view.getDiffView()).toBe("unified");
+    await report.view.setDiffView("side-by-side");
+    expect(report.element.querySelectorAll("lumine-text-editor").length).toBe(2);
+    const stagedBefore = await lumine.repositories.executeGit(
+      ["diff", "--cached", "--name-only"],
+      workingDirectory,
+    );
+    expect(stagedBefore.stdout).toBe("");
+
+    await controller.modals.inputDialog.setQuery("Visual preview update");
+    await lumine.commands.dispatch(controller.modals.inputDialog.getElement(), "core:confirm");
+    const result = await lumine.repositories.executeGit(
+      ["log", "-1", "--format=%s"],
+      workingDirectory,
+    );
+    expect(result.stdout.trim()).toBe("Visual preview update");
+    expect(controller.modals.diffReport).toBeNull();
+    expect(report.destroyed).toBe(true);
   });
 
   it("creates stashes through the repository operation facade", async () => {

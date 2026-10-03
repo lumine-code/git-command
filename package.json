@@ -88,6 +88,16 @@
       }
     }
   },
+  "consumedServices": {
+    "git-panel": {
+      "versions": {
+        "^1.0.0": "consumeGitPanel"
+      }
+    }
+  },
+  "specPackages": [
+    "git-panel"
+  ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.11.0",

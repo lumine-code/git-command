@@ -9,8 +9,8 @@ The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ide
 - **Modal command list**: find common repository actions in a select list hosted by Lumine's modal pane zone.
 - **Central execution**: use Lumine's repository registry, operation queue, authentication, and bundled Git.
 - **Guided workflows**: choose branches, remotes, commits, and stashes through modal flows.
-- **Commit previews**: review staged or current-file changes before entering a commit message.
-- **Repository reports**: inspect status, diffs, history, and blame in reusable output panes.
+- **Commit previews**: review changes in Unified or Side by Side before entering a commit message.
+- **Repository reports**: inspect status, diffs, history, and blame in reusable output panes, with separate staged and unstaged diff snapshots.
 - **Protected branches**: block commits and pushes on configured branch names.
 - **File actions**: stage, unstage, restore, or open changed files from the active repository.
 - **Git fallback**: run an arbitrary argument line when a specialized action is not available.
@@ -65,6 +65,13 @@ You can adjust the package's panes and modal content in your `styles.css`:
   color: var(--text-color);
 }
 ```
+
+## Services
+
+- `background-tips.provider`: provided to background tips to describe the Git command picker.
+- `git-panel`: consumed to render diffs with the shared Unified and Side by Side layouts.
+
+Visual diffs are available while `git-panel` is active. If its service is unavailable, diff reports and commit previews show a text patch with the reason. Untracked files retain their text or binary previews, and changing the preview layout does not stage changes or alter the commit workflow.
 
 ## Contributing
 

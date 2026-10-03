@@ -22,6 +22,60 @@
   display: none;
 }
 
+.git-command-preview pre {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.git-command-preview--diff {
+  height: min(45vh, 32rem);
+  padding: 0;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.git-command-diff-report {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.git-command-diff-tabs {
+  flex: none;
+  align-self: flex-start;
+  margin: var(--component-padding, 10px);
+}
+
+.git-command-diff-tabs[hidden] {
+  display: none;
+}
+
+.git-command-diff-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.git-command-diff-body .git-panel-ChangesView {
+  flex: 1;
+  min-height: 0;
+}
+
+.git-command-diff-body pre {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  white-space: pre;
+}
+
+.git-command-diff-unavailable {
+  margin: 0 var(--component-padding, 10px) var(--component-padding, 10px);
+}
+
 .git-command-output {
   display: flex;
   flex-direction: column;
@@ -30,7 +84,7 @@
   color: var(--text-color);
 }
 
-.git-command-output header {
+.git-command-output > header {
   display: flex;
   align-items: center;
   gap: var(--component-padding, 10px);
@@ -39,7 +93,7 @@
   background: var(--tool-panel-background-color);
 }
 
-.git-command-output header strong {
+.git-command-output > header strong {
   flex: 1;
 }
 
