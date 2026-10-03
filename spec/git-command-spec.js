@@ -220,6 +220,37 @@ describe("git-command", () => {
     });
   }
 
+  it("shows no file headers for unchanged snapshots in either layout", async () => {
+    await lumine.packages.activatePackage("git-panel");
+    await controller.diffCurrentFile();
+    const output = lumine.workspace.getActivePaneItem();
+    const report = output.diffReport;
+    for (const section of ["staged", "unstaged"]) {
+      await report.select(section);
+      for (const mode of ["unified", "side-by-side"]) {
+        await report.view.setDiffView(mode);
+        expect(report.view.props.multiFilePatch.getFilePatches()).toEqual([]);
+        expect(report.element.querySelector(".git-panel-FilePatchView-header")).toBeNull();
+        expect(report.element.textContent).toContain("No changes to display");
+      }
+    }
+    lumine.workspace.getActivePane().activateItem(editor);
+    editor.setText("changed\n");
+    await editor.save();
+    await controller.diffCurrentFile();
+    expect(report.view.getDiffView()).toBe("side-by-side");
+    expect(report.view.props.multiFilePatch.anyPresent()).toBe(true);
+    expect(report.element.querySelector(".git-panel-FilePatchView-header")).not.toBeNull();
+    editor.setText("initial\n");
+    await editor.save();
+    lumine.workspace.getActivePane().activateItem(editor);
+    await controller.diffCurrentFile();
+    expect(report.view.getDiffView()).toBe("side-by-side");
+    expect(report.view.props.multiFilePatch.getFilePatches()).toEqual([]);
+    expect(report.element.querySelector(".git-panel-FilePatchView-header")).toBeNull();
+    expect(report.element.textContent).toContain("No changes to display");
+  });
+
   it("clears visual diffs when the provider disappears while retaining the text report", async () => {
     await lumine.packages.activatePackage("git-panel");
     editor.setText("worktree\n");
