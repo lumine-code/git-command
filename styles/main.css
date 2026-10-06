@@ -6,11 +6,11 @@
 .git-command-preview {
   box-sizing: border-box;
   max-height: min(45vh, 32rem);
-  margin: var(--component-padding, 10px) 0 0;
-  padding: var(--component-padding, 10px);
+  margin: var(--ui-spacing, 10px) 0 0;
+  padding: var(--ui-spacing, 10px);
   overflow: auto;
   border: 1px solid var(--base-border-color);
-  border-radius: var(--component-border-radius, 3px);
+  border-radius: var(--ui-border-radius, 3px);
   background: var(--inset-panel-background-color);
   color: var(--text-color);
   font-family: var(--editor-font-family);
@@ -46,7 +46,7 @@
 .git-command-diff-tabs {
   flex: none;
   align-self: flex-start;
-  margin: var(--component-padding, 10px);
+  margin: var(--ui-spacing, 10px);
 }
 
 .git-command-diff-tabs[hidden] {
@@ -73,7 +73,7 @@
 }
 
 .git-command-diff-unavailable {
-  margin: 0 var(--component-padding, 10px) var(--component-padding, 10px);
+  margin: 0 var(--ui-spacing, 10px) var(--ui-spacing, 10px);
 }
 
 .git-command-output {
@@ -87,8 +87,8 @@
 .git-command-output > header {
   display: flex;
   align-items: center;
-  gap: var(--component-padding, 10px);
-  padding: var(--component-padding, 10px);
+  gap: var(--ui-spacing, 10px);
+  padding: var(--ui-spacing, 10px);
   border-bottom: 1px solid var(--base-border-color);
   background: var(--tool-panel-background-color);
 }
@@ -102,7 +102,7 @@
   box-sizing: border-box;
   min-height: 0;
   margin: 0;
-  padding: var(--component-padding, 10px);
+  padding: var(--ui-spacing, 10px);
   overflow: auto;
   color: inherit;
   font-family: var(--editor-font-family);
