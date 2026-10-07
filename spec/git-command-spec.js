@@ -10,10 +10,14 @@ describe("git-command", () => {
   let main;
   let repository;
   let workingDirectory;
+  let additionalRepositories;
+  let additionalDirectories;
 
   beforeEach(async () => {
-    lumine.config.set("git-command.protectCommits", false);
-    lumine.config.set("git-command.protectPushes", false);
+    lumine.config.set("git.protectCommits", false);
+    lumine.config.set("git.protectPushes", false);
+    additionalRepositories = [];
+    additionalDirectories = [];
     workingDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "git-command-"));
     repository = await lumine.repositories.initialize(workingDirectory, { initialBranch: "main" });
     const operations = repository.getOperations();
@@ -40,23 +44,50 @@ describe("git-command", () => {
   });
 
   afterEach(async () => {
+    lumine.repositories.setActiveRepository(null);
     await lumine.packages.deactivatePackage("command-palette");
     await lumine.packages.deactivatePackage("git-command");
-    await lumine.packages.deactivatePackage("git-panel");
+    await lumine.packages.deactivatePackage("patch-view");
     for (const pane of lumine.workspace.getPanes()) {
       for (const item of pane.getItems()) {
         await pane.destroyItem(item, { force: true });
       }
     }
     lumine.repositories.forget(repository);
-    lumine.config.unset("git-command.protectCommits");
-    lumine.config.unset("git-command.protectPushes");
+    for (const additional of additionalRepositories) lumine.repositories.forget(additional);
+    lumine.config.unset("git.protectCommits");
+    lumine.config.unset("git.protectPushes");
     try {
       fs.rmSync(workingDirectory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      for (const directory of additionalDirectories) {
+        fs.rmSync(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      }
     } catch {
       // Windows can retain a short-lived worker handle after a Git operation.
     }
   });
+
+  async function anotherRepository() {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "git-command-context-"));
+    additionalDirectories.push(directory);
+    const additional = await lumine.repositories.initialize(directory, { initialBranch: "main" });
+    additionalRepositories.push(additional);
+    const operations = additional.getOperations();
+    await operations.setConfig("user.name", "Git Command Specs");
+    await operations.setConfig("user.email", "specs@lumine.invalid");
+    const additionalPath = path.join(directory, "other.txt");
+    fs.writeFileSync(additionalPath, "initial other\n");
+    await operations.stageFiles(["other.txt"]);
+    await operations.commit("Initial other commit");
+    return { repository: additional, filePath: additionalPath, directory };
+  }
+
+  async function stagedNames(target) {
+    const result = await target
+      .getOperations()
+      .executeGit(["diff", "--cached", "--name-only"], { readOnly: true });
+    return result.stdout.trim();
+  }
 
   it("registers its commands and opens the select list in a modal panel", () => {
     lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:show-command-list");
@@ -83,7 +114,40 @@ describe("git-command", () => {
 
     lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:stage-all");
 
-    expect(controller.perform).toHaveBeenCalledWith("stage-all");
+    const [action, options] = controller.perform.calls.mostRecent().args;
+    expect(action).toBe("stage-all");
+    expect(options.event.target).toBe(lumine.workspace.getElement());
+  });
+
+  it("dispatches repository actions to pinned B and file actions to focused A", async () => {
+    const other = await anotherRepository();
+    editor.setText("change in focused A\n");
+    await editor.save();
+    fs.writeFileSync(other.filePath, "change in pinned B\n");
+    lumine.repositories.setActiveRepository(other.repository, { pin: true });
+    expect(lumine.workspace.getActiveTextEditor()).toBe(editor);
+    await lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:stage-all");
+    expect(await stagedNames(other.repository)).toBe("other.txt");
+    expect(await stagedNames(repository)).toBe("");
+    await lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:stage-current-file");
+    expect(await stagedNames(repository)).toBe("example.txt");
+    expect(lumine.repositories.getActiveRepository()).toBe(other.repository);
+  });
+
+  it("uses a non-active editor's dispatch target for file actions", async () => {
+    const other = await anotherRepository();
+    const originatingEditor = await lumine.workspace.open(other.filePath);
+    originatingEditor.setText("change in originating editor\n");
+    await originatingEditor.save();
+    lumine.workspace.getActivePane().activateItem(editor);
+    lumine.repositories.setActiveRepository(repository, { pin: true });
+    await lumine.commands.dispatch(
+      lumine.views.getView(originatingEditor),
+      "git-command:stage-current-file",
+    );
+    expect(lumine.workspace.getActiveTextEditor()).toBe(editor);
+    expect(await stagedNames(other.repository)).toBe("other.txt");
+    expect(await stagedNames(repository)).toBe("");
   });
 
   it("coexists with the bundled Command Palette", async () => {
@@ -184,7 +248,7 @@ describe("git-command", () => {
 
   for (const method of ["diffCurrentFile", "diffAll"]) {
     it(`renders ${method} with separate snapshots in Unified and Side by Side`, async () => {
-      await lumine.packages.activatePackage("git-panel");
+      await lumine.packages.activatePackage("patch-view");
       editor.setText("staged\n");
       await editor.save();
       await repository.getOperations().stageFiles(["example.txt"]);
@@ -221,7 +285,7 @@ describe("git-command", () => {
   }
 
   it("shows no file headers for unchanged snapshots in either layout", async () => {
-    await lumine.packages.activatePackage("git-panel");
+    await lumine.packages.activatePackage("patch-view");
     await controller.diffCurrentFile();
     const output = lumine.workspace.getActivePaneItem();
     const report = output.diffReport;
@@ -230,7 +294,7 @@ describe("git-command", () => {
       for (const mode of ["unified", "side-by-side"]) {
         await report.view.setDiffView(mode);
         expect(report.view.props.multiFilePatch.getFilePatches()).toEqual([]);
-        expect(report.element.querySelector(".git-panel-FilePatchView-header")).toBeNull();
+        expect(report.element.querySelector(".patch-view-FilePatchView-header")).toBeNull();
         expect(report.element.textContent).toContain("No changes to display");
       }
     }
@@ -240,45 +304,47 @@ describe("git-command", () => {
     await controller.diffCurrentFile();
     expect(report.view.getDiffView()).toBe("side-by-side");
     expect(report.view.props.multiFilePatch.anyPresent()).toBe(true);
-    expect(report.element.querySelector(".git-panel-FilePatchView-header")).not.toBeNull();
+    expect(report.element.querySelector(".patch-view-FilePatchView-header")).not.toBeNull();
     editor.setText("initial\n");
     await editor.save();
     lumine.workspace.getActivePane().activateItem(editor);
     await controller.diffCurrentFile();
     expect(report.view.getDiffView()).toBe("side-by-side");
     expect(report.view.props.multiFilePatch.getFilePatches()).toEqual([]);
-    expect(report.element.querySelector(".git-panel-FilePatchView-header")).toBeNull();
+    expect(report.element.querySelector(".patch-view-FilePatchView-header")).toBeNull();
     expect(report.element.textContent).toContain("No changes to display");
   });
 
   it("clears visual diffs when the provider disappears while retaining the text report", async () => {
-    await lumine.packages.activatePackage("git-panel");
+    expect(lumine.packages.isPackageActive("git-panel")).toBe(false);
+    await lumine.packages.activatePackage("patch-view");
     editor.setText("worktree\n");
     await editor.save();
     await controller.diffAll();
     const report = lumine.workspace.getActivePaneItem().diffReport;
     await report.view.setDiffView("side-by-side");
     const previousPatch = report.patches.get("unstaged");
-    await lumine.packages.deactivatePackage("git-panel");
-    expect(main.gitPanel).toBeNull();
+    await lumine.packages.deactivatePackage("patch-view");
+    expect(main.patchView).toBeNull();
     expect(report.view).toBeNull();
     expect(previousPatch.isDisposed()).toBe(true);
-    expect(report.body.textContent).toContain("git-panel service is inactive");
+    expect(report.body.textContent).toContain("patch-view service is inactive");
     expect(report.body.textContent).toContain("+worktree");
-    await lumine.packages.activatePackage("git-panel");
+    await lumine.packages.activatePackage("patch-view");
     expect(report.view.getDiffView()).toBe("side-by-side");
+    expect(lumine.packages.isPackageActive("git-panel")).toBe(false);
   });
 
   it("does not let an obsolete provider edge clear its replacement", () => {
     const bridge = {};
-    const first = main.consumeGitPanel(bridge);
-    const second = main.consumeGitPanel(bridge);
+    const first = main.consumePatchView(bridge);
+    const second = main.consumePatchView(bridge);
     first.dispose();
-    expect(main.gitPanel).toBe(bridge);
-    expect(controller.gitPanel).toBe(bridge);
+    expect(main.patchView).toBe(bridge);
+    expect(controller.patchView).toBe(bridge);
     second.dispose();
-    expect(main.gitPanel).toBeNull();
-    expect(controller.gitPanel).toBeNull();
+    expect(main.patchView).toBeNull();
+    expect(controller.patchView).toBeNull();
   });
 
   it("opens existing changed files without opening ignored paths or directories", async () => {
@@ -324,7 +390,7 @@ describe("git-command", () => {
   });
 
   it("uses Side by Side in the commit preview without changing the commit workflow", async () => {
-    await lumine.packages.activatePackage("git-panel");
+    await lumine.packages.activatePackage("patch-view");
     editor.setText("quick change\n");
     await editor.save();
     await controller.quickCommitCurrentFile({ crumb: "Quick commit" });
@@ -363,14 +429,33 @@ describe("git-command", () => {
   });
 
   it("blocks commits on configured protected branches", async () => {
-    lumine.config.set("git-command.protectCommits", true);
-    lumine.config.set("git-command.protectedBranches", ["main"]);
-    spyOn(lumine.notifications, "addWarning");
-
+    lumine.config.set("git.protectCommits", true);
+    lumine.config.set("git.protectedBranches", ["main"]);
     await controller.commit();
+    const previousHead = repository.getStatusSnapshot().head.oid;
+    await controller.modals.confirmInput("Blocked commit");
+    expect(controller.modals.inputDialogHost.isVisible()).toBe(true);
+    expect(controller.modals.inputDialog.getElement().textContent).toContain(
+      "protected branch main",
+    );
+    expect(repository.getStatusSnapshot().head.oid).toBe(previousHead);
+  });
 
-    expect(lumine.notifications.addWarning).toHaveBeenCalled();
-    expect(controller.modals.inputDialogHost.isVisible()).toBe(false);
+  it("keeps the commit dialog open when HEAD changes after its preview", async () => {
+    editor.setText("staged for the preview\n");
+    await editor.save();
+    await repository.getOperations().stageFiles(["example.txt"]);
+    await lumine.commands.dispatch(lumine.workspace.getElement(), "git-command:commit");
+    expect(controller.modals.inputDialogHost.isVisible()).toBe(true);
+    await repository.getOperations().commit("Concurrent commit");
+    const current = await repository.refreshStatusSnapshot();
+    await controller.modals.inputDialog.setQuery("Obsolete preview commit");
+    await lumine.commands.dispatch(controller.modals.inputDialog.getElement(), "core:confirm");
+    expect(controller.modals.inputDialogHost.isVisible()).toBe(true);
+    expect(controller.modals.inputDialog.getElement().textContent).toContain("HEAD changed");
+    expect(repository.getStatusSnapshot().head.oid).toBe(current.head.oid);
+    const latest = await repository.getCommit("HEAD");
+    expect(latest.subject).toBe("Concurrent commit");
   });
 
   it("removes its commands when deactivated", async () => {

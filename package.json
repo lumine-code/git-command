@@ -30,36 +30,6 @@
     "lumine": "^1.0.0"
   },
   "configSchema": {
-    "protectedBranches": {
-      "title": "Protected branches",
-      "description": "Branch names on which guarded commit and push actions are blocked.",
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "default": [
-        "main",
-        "master"
-      ]
-    },
-    "protectCommits": {
-      "title": "Protect commits",
-      "description": "Block commit workflows on protected branches.",
-      "type": "boolean",
-      "default": true
-    },
-    "protectPushes": {
-      "title": "Protect pushes",
-      "description": "Block pushes from protected branches.",
-      "type": "boolean",
-      "default": true
-    },
-    "pullRebase": {
-      "title": "Rebase when pulling",
-      "description": "Pass --rebase to pull operations.",
-      "type": "boolean",
-      "default": false
-    },
     "stashIncludeUntracked": {
       "title": "Stash untracked files",
       "description": "Include untracked files when creating a stash.",
@@ -89,14 +59,14 @@
     }
   },
   "consumedServices": {
-    "git-panel": {
+    "patch-view": {
       "versions": {
-        "^1.0.0": "consumeGitPanel"
+        "^1.0.0": "consumePatchView"
       }
     }
   },
   "specPackages": [
-    "git-panel"
+    "patch-view"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",

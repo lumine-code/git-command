@@ -20,8 +20,8 @@ describe("Git command visual diff snapshots", () => {
     bridge = {
       filterDiff: (rawPatch) => ({ filtered: rawPatch, removed: [] }),
       parseDiff: (rawPatch) => [{ rawPatch }],
-      buildMultiFilePatch: jasmine.createSpy("buildMultiFilePatch").and.callFake((diffs) => {
-        const patch = { rawPatch: diffs[0].rawPatch, dispose: jasmine.createSpy("dispose patch") };
+      buildPatch: jasmine.createSpy("buildPatch").and.callFake((snapshot) => {
+        const patch = { rawPatch: snapshot.rawPatch, dispose: jasmine.createSpy("dispose patch") };
         patches.push(patch);
         return patch;
       }),
@@ -30,7 +30,7 @@ describe("Git command visual diff snapshots", () => {
           this.props = props;
           this.diffView = props.initialDiffView;
           this.element = document.createElement("div");
-          this.element.className = "git-panel-ChangesView";
+          this.element.className = "patch-view-ChangesView";
           this.destroy = jasmine.createSpy("destroy view");
           views.push(this);
           props.refPatchController.setter(this);
@@ -59,7 +59,7 @@ describe("Git command visual diff snapshots", () => {
   afterEach(() => report?.destroy());
 
   it("keeps index and worktree snapshots separate for both layouts", async () => {
-    report = new DiffReport({ data, gitPanel: bridge, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
     expect(report.view.getDiffView()).toBe("unified");
     for (const mode of ["unified", "side-by-side"]) {
       await report.view.setDiffView(mode);
@@ -75,8 +75,22 @@ describe("Git command visual diff snapshots", () => {
     expect(views.length).toBe(1);
   });
 
+  it("hands structured files to the patch provider without reparsing their display patch", () => {
+    const files = [
+      { oldPath: "example.txt", newPath: "example.txt", status: "modified", hunks: [] },
+    ];
+    data.sections[0].files = files;
+    data.sections[0].rawPatch = "An opaque display string rather than parseable Git output";
+    const parse = spyOn(bridge, "parseDiff").and.throwError("Must not reparse structured files");
+    const filter = spyOn(bridge, "filterDiff").and.throwError("Must not filter structured files");
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
+    expect(bridge.buildPatch.calls.mostRecent().args[0].files).toBe(files);
+    expect(parse).not.toHaveBeenCalled();
+    expect(filter).not.toHaveBeenCalled();
+  });
+
   it("preserves the selected snapshot and layout when refreshing a report", async () => {
-    report = new DiffReport({ data, gitPanel: bridge, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
     await report.view.setDiffView("side-by-side");
     await report.select("unstaged");
     const obsolete = [...patches];
@@ -92,7 +106,7 @@ describe("Git command visual diff snapshots", () => {
   });
 
   it("keeps snapshot buttons stable so selecting a tab preserves keyboard focus", async () => {
-    report = new DiffReport({ data, gitPanel: bridge, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
     jasmine.attachToDOM(report.element);
     const button = report.tabs.children[1];
     button.focus();
@@ -103,24 +117,49 @@ describe("Git command visual diff snapshots", () => {
   });
 
   it("releases provider-owned state on service loss and recreates it on return", async () => {
-    report = new DiffReport({ data, gitPanel: bridge, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
     await report.view.setDiffView("side-by-side");
     const previousView = report.view;
     const previousPatch = patches[0];
-    await report.update({ gitPanel: null });
+    await report.update({ patchView: null });
     expect(previousView.destroy).toHaveBeenCalledTimes(1);
     expect(previousPatch.dispose).toHaveBeenCalledTimes(1);
     expect(report.view).toBeNull();
-    expect(report.body.textContent).toContain("git-panel service is inactive");
+    expect(report.body.textContent).toContain("patch-view service is inactive");
     expect(report.body.textContent).toContain("+index");
-    await report.update({ gitPanel: bridge });
+    await report.update({ patchView: bridge });
     expect(report.view.getDiffView()).toBe("side-by-side");
     expect(report.view.props.multiFilePatch).not.toBe(previousPatch);
   });
 
+  it("replaces the patch service while retaining the chosen snapshot and layout", async () => {
+    const activate = spyOn(lumine.packages, "activatePackage");
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
+    await report.select("unstaged");
+    await report.view.setDiffView("side-by-side");
+    const previousView = report.view;
+    const previousPatches = [...patches];
+    const replacementPatch = {
+      rawPatch: "replacement provider",
+      dispose: jasmine.createSpy("dispose replacement"),
+    };
+    const replacement = {
+      ...bridge,
+      buildPatch: jasmine.createSpy("replacement patch").and.returnValue(replacementPatch),
+    };
+    await report.update({ patchView: replacement });
+    expect(previousView.destroy).toHaveBeenCalledTimes(1);
+    for (const patch of previousPatches) expect(patch.dispose).toHaveBeenCalledTimes(1);
+    expect(report.selected).toBe("unstaged");
+    expect(report.view.getDiffView()).toBe("side-by-side");
+    expect(report.view.props.multiFilePatch).toBe(replacementPatch);
+    expect(replacement.buildPatch.calls.mostRecent().args[0]).toBe(data.sections[1]);
+    expect(activate).not.toHaveBeenCalled();
+  });
+
   it("displays the reason for an older provider without activating another package", () => {
     const activate = spyOn(lumine.packages, "activatePackage");
-    report = new DiffReport({ data, gitPanel: {}, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: {}, title: "Git Diff" });
     expect(report.body.textContent).toContain("does not provide this view");
     expect(report.body.textContent).toContain("+index");
     expect(activate).not.toHaveBeenCalled();
@@ -132,7 +171,7 @@ describe("Git command visual diff snapshots", () => {
       title: "Untracked Files",
       text: "new.txt\n\nnew contents",
     });
-    report = new DiffReport({ data, gitPanel: bridge, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
     await report.view.setDiffView("side-by-side");
     await report.select("untracked");
     expect(report.body.textContent).toContain("new contents");
@@ -142,7 +181,7 @@ describe("Git command visual diff snapshots", () => {
   });
 
   it("releases every source snapshot once on repeated destruction", async () => {
-    report = new DiffReport({ data, gitPanel: bridge, title: "Git Diff" });
+    report = new DiffReport({ data, patchView: bridge, title: "Git Diff" });
     await report.select("unstaged");
     const currentView = report.view;
     report.destroy();

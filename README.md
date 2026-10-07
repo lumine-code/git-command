@@ -7,12 +7,12 @@ The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ide
 ## Features
 
 - **Modal command list**: find common repository actions in a select list hosted by Lumine's modal pane zone.
-- **Central execution**: use Lumine's repository registry, operation queue, authentication, and bundled Git.
+- **Central execution**: use the editor's repository registry, operation queue, authentication, and system Git.
 - **Guided workflows**: choose branches, remotes, commits, and stashes through modal flows.
 - **Commit previews**: review changes in Unified or Side by Side before entering a commit message.
 - **Repository reports**: inspect status, diffs, history, and blame in reusable output panes, with separate staged and unstaged diff snapshots.
 - **Protected branches**: block commits and pushes on configured branch names.
-- **File actions**: stage, unstage, restore, or open changed files from the active repository.
+- **File actions**: stage, unstage, restore, or inspect the originating editor's file.
 - **Git fallback**: run an arbitrary argument line when a specialized action is not available.
 
 ## Installation
@@ -55,6 +55,10 @@ Commands available in `lumine-workspace`:
 
 ## Customization
 
+Repository actions follow the selected or pinned repository. File actions follow the editor that dispatched the command, or the active editor when invoked from the menu or command picker.
+
+Commit and push protection, protected branches, force-push confirmation, and pull behavior use the editor's shared Git settings. A commit preview records the current HEAD; if HEAD changes before confirmation, reopen the preview against the current repository state.
+
 You can adjust the package's panes and modal content in your `styles.css`:
 
 ```css
@@ -69,9 +73,9 @@ You can adjust the package's panes and modal content in your `styles.css`:
 ## Services
 
 - `background-tips.provider`: provided to background tips to describe the Git command picker.
-- `git-panel`: consumed to render diffs with the shared Unified and Side by Side layouts.
+- `patch-view`: consumed to render structured diffs with the shared Unified and Side by Side layouts.
 
-Visual diffs are available while `git-panel` is active. If its service is unavailable, diff reports and commit previews show a text patch with the reason. Untracked files retain their text or binary previews, and changing the preview layout does not stage changes or alter the commit workflow.
+Visual diffs are available while `patch-view` is active. If its service is unavailable, diff reports and commit previews show a text patch with the reason. Untracked files retain their text or binary previews, and changing the preview layout does not stage changes or alter the commit workflow.
 
 ## Contributing
 

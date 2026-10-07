@@ -22,11 +22,11 @@ describe("Git diff display", () => {
       from: { type: "commit", revision: "HEAD" },
       to: { type: "index" },
       paths: ["example.txt"],
-      format: "patch",
+      format: "both",
     });
     expect(repository.getDiff.calls.argsFor(1)[0]).toEqual({
       paths: ["example.txt"],
-      format: "patch",
+      format: "both",
     });
     expect(controller.runRaw).not.toHaveBeenCalled();
     expect(text).toContain("+staged-index");
