@@ -202,7 +202,8 @@ describe("git-command", () => {
     const result = await list.confirmSelection();
 
     expect(result.action.disposition).toBe("stay");
-    expect(onConfirm).toHaveBeenCalledWith(item);
+    expect(onConfirm.calls.mostRecent().args[0]).toBe(item);
+    expect(typeof onConfirm.calls.mostRecent().args[1]).toBe("function");
     expect(controller.modals.selectListHost.isVisible()).toBe(false);
   });
 
