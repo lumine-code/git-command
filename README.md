@@ -2,6 +2,8 @@
 
 Run common Git workflows from a searchable select list in Lumine's modal pane zone.
 
+Fork of [akonwi/git-plus](https://github.com/akonwi/git-plus).
+
 The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ideas from `mauricioszabo/simple-git`.
 
 ## Features
