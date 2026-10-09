@@ -7,8 +7,10 @@ describe("Git history consumers", () => {
       getCommits: jasmine.createSpy("getCommits").and.resolveTo({ commits: [] }),
     };
     controller.getRepository = () => repository;
+    const pendingSelection = {};
     controller.modals = {
-      showSelection: jasmine.createSpy("showSelection").and.resolveTo(),
+      pendingSelection,
+      showSelection: jasmine.createSpy("showSelection").and.resolveTo(pendingSelection),
       updateSelection: jasmine.createSpy("updateSelection").and.resolveTo(),
     };
 
