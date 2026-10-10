@@ -32,7 +32,7 @@ describe("Quick commit current-file scope", () => {
     editor = await lumine.workspace.open(path.join(scratch, "active.txt"));
     jasmine.attachToDOM(lumine.workspace.getElement());
     lumine.repositories.setActiveRepository(repository, { pin: true });
-    await lumine.packages.activatePackage("patch-view");
+    await lumine.packages.activatePackage("git-panel");
     await lumine.packages.activatePackage("git-command");
     pack = lumine.packages.getActivePackage("git-command");
     controller = pack.mainModule.ensureController();
@@ -41,6 +41,7 @@ describe("Quick commit current-file scope", () => {
   afterEach(async () => {
     lumine.repositories.setActiveRepository(null);
     await lumine.packages.deactivatePackage("git-command");
+    await lumine.packages.deactivatePackage("git-panel");
     if (lumine.packages.isPackageLoaded("git-command"))
       await lumine.packages.unloadPackage("git-command");
     editor?.destroy();

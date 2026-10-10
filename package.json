@@ -59,14 +59,14 @@
     }
   },
   "consumedServices": {
-    "patch-view": {
+    "git-panel.diff": {
       "versions": {
-        "^1.0.0": "consumePatchView"
+        "^1.0.0": "consumeDiff"
       }
     }
   },
   "specPackages": [
-    "patch-view"
+    "git-panel"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",

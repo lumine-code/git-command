@@ -77,9 +77,9 @@ You can adjust the package's panes and modal content in your `styles.css`:
 ## Services
 
 - `background-tips.provider`: provided to background tips to describe the Git command picker.
-- `patch-view`: consumed to render structured diffs with the shared Unified and Side by Side layouts.
+- `git-panel.diff`: consumed from Git Panel to render structured diffs with the shared Unified and Side by Side layouts.
 
-Visual diffs are available while `patch-view` is active. If its service is unavailable, diff reports and commit previews show a text patch with the reason. Untracked files retain their text or binary previews, and changing the preview layout does not stage changes or alter the commit workflow.
+Visual diffs are available while Git Panel provides its diff service. If its service is unavailable, diff reports and commit previews show a text patch with the reason. Untracked files retain their text or binary previews, and changing the preview layout does not stage changes or alter the commit workflow.
 
 ## Contributing
 

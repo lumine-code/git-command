@@ -11,7 +11,7 @@ describe("Git command output layout", () => {
       workingDirectory: __dirname,
       sections: [{ id: "unstaged", title: "Unstaged Changes", rawPatch: "-old\n+new\n" }],
     },
-    patchView: null,
+    diffService: null,
   };
 
   beforeEach(() => {
