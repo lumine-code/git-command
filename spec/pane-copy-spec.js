@@ -1,93 +1,61 @@
 const { OutputManager } = require("../lib/output-view");
-
-const rawPatch = (value) =>
-  `diff --git a/example.txt b/example.txt\nindex 1234567..abcdef0 100644\n--- a/example.txt\n+++ b/example.txt\n@@ -1 +1 @@\n-before\n+${value}\n`;
-
-describe("Git command pane copy ownership", () => {
-  let manager, bridge, source;
-
+describe("Git command output resource ownership", () => {
+  let manager, source;
   beforeEach(async () => {
     jasmine.attachToDOM(lumine.workspace.getElement());
-    const git = await lumine.packages.startPackage("git-panel");
-    bridge = git.mainModule.provideDiff();
-    manager = new OutputManager({ diffService: bridge });
-    source = await manager.show("copy-fixture", {
-      title: "Git Diff",
-      diffData: {
-        workingDirectory: __dirname,
-        sections: [
-          { id: "staged", title: "Staged", rawPatch: rawPatch("index") },
-          { id: "unstaged", title: "Unstaged", rawPatch: rawPatch("worktree") },
-        ],
-      },
-    });
-    await globalThis.flushMicrotasks();
+    manager = new OutputManager();
+    source = await manager.show("status-fixture", { title: "Git Status", content: "first result" });
   });
-
   afterEach(async () => {
     manager.destroy();
     await globalThis.flushMicrotasks();
   });
 
-  it("copies the selected snapshot, comparison layout and column without re-running a command", async () => {
-    await source.diffReport.select("unstaged");
-    await source.diffReport.view.setDiffView("side-by-side");
-    await globalThis.flushMicrotasks();
-    const pair = source.diffReport.view.refPatchController.get().refView.get().refSideBySide.get();
-    pair.activeSide = "old";
-    pair.focus();
-    const copied = await lumine.workspace.copyPaneItem(source, {
-      splitDirection: "right",
-      activatePane: false,
-    });
-    await globalThis.flushMicrotasks();
-    const copy = copied.item;
-    expect(copy.diffData).not.toBe(source.diffData);
-    expect(copy.diffReport.selected).toBe("unstaged");
-    expect(copy.diffReport.view.getDiffView()).toBe("side-by-side");
-    expect(copy.diffReport.view.capturePresentationState().activeSide).toBe("old");
-    const sourceBuffer = source.diffReport.view.props.multiFilePatch.getBuffer();
-    const copiedBuffer = copy.diffReport.view.props.multiFilePatch.getBuffer();
-    expect(copiedBuffer).not.toBe(sourceBuffer);
-    expect(copiedBuffer.getText()).toContain("worktree");
-    await lumine.workspace.paneForItem(source).destroyItem(source, true);
-    expect(copiedBuffer.isDestroyed()).toBe(false);
-    await manager.setDiffService(null);
-    expect(copy.diffReport.view).toBeNull();
-    expect(copiedBuffer.isDestroyed()).toBe(true);
-    expect(copy.diffReport.body.textContent).toContain("worktree");
-    await manager.setDiffService(bridge);
-    expect(copy.diffReport.view.getDiffView()).toBe("side-by-side");
+  it("silently skips copy without allocating a view, changing focus or mutating panes", async () => {
+    const panes = lumine.workspace.getPanes();
+    const active = lumine.workspace.getActivePane();
+    const warnings = spyOn(lumine.notifications, "addWarning");
+    const errors = spyOn(lumine.notifications, "addError");
+    expect(await lumine.workspace.copyPaneItem(source, { splitDirection: "right" })).toBeNull();
+    expect(manager.allViews.size).toBe(1);
+    expect(lumine.workspace.getPanes()).toEqual(panes);
+    expect(lumine.workspace.getActivePane()).toBe(active);
+    expect(warnings).not.toHaveBeenCalled();
+    expect(errors).not.toHaveBeenCalled();
   });
 
-  it("owns and destroys copied outputs before insertion and rejects copies after provider retirement", () => {
-    const copy = source.copy();
-    expect(manager.allViews.has(copy)).toBe(true);
-    expect(lumine.workspace.paneForItem(copy)).toBeFalsy();
-    manager.destroy();
-    expect(copy.isDestroyed()).toBe(true);
-    expect(manager.allViews.size).toBe(0);
-    expect(() => copy.copy()).toThrow();
-  });
-
-  it("opens a fresh command result without repurposing a surviving copied snapshot", async () => {
-    const copy = source.copy();
-    await lumine.workspace.open(copy);
-    await lumine.workspace.paneForItem(source).destroyItem(source, true);
-    const fresh = await manager.show("copy-fixture", {
+  it("keeps independent executions of the same command in separate result cards", async () => {
+    const next = await manager.show("status-fixture", {
       title: "Git Status",
-      content: "new result",
+      content: "next result",
     });
-    expect(fresh).not.toBe(copy);
-    expect(fresh.copyText).toBe("new result");
-    expect(copy.copyText).toContain("worktree");
+    expect(next).not.toBe(source);
+    expect(next.getSingletonKey()).not.toBe(source.getSingletonKey());
+    expect(source.copyText).toBe("first result");
+    expect(next.copyText).toBe("next result");
     expect(manager.allViews.size).toBe(2);
   });
 
-  it("rejects cancellation before constructing any copied view", () => {
-    const controller = new AbortController();
-    controller.abort();
-    expect(() => source.copy({ signal: controller.signal })).toThrow();
-    expect(manager.allViews.size).toBe(1);
+  it("moves an output unchanged and reopens it without duplicating its resource", async () => {
+    const root = source.element;
+    const moved = await lumine.workspace.movePaneItem(source, { splitDirection: "right" });
+    expect(moved.item).toBe(source);
+    expect(source.element).toBe(root);
+    const panes = lumine.workspace.getPanes();
+    expect(await lumine.workspace.open(source.getURI(), { split: "down" })).toBe(source);
+    expect(lumine.workspace.getPanes()).toEqual(panes);
+  });
+
+  it("retires every distinct execution and removes its pane ownership", async () => {
+    const next = await manager.show("status-fixture", {
+      title: "Git Status",
+      content: "next result",
+    });
+    manager.destroy();
+    expect(source.isDestroyed()).toBe(true);
+    expect(next.isDestroyed()).toBe(true);
+    expect(lumine.workspace.paneForItem(source)).toBeFalsy();
+    expect(lumine.workspace.paneForItem(next)).toBeFalsy();
+    expect(manager.allViews.size).toBe(0);
   });
 });

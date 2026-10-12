@@ -276,7 +276,9 @@ describe("git-command", () => {
       }
       lumine.workspace.getActivePane().activateItem(editor);
       await controller[method]();
-      expect(lumine.workspace.getActivePaneItem()).toBe(output);
+      const next = lumine.workspace.getActivePaneItem();
+      expect(next).not.toBe(output);
+      expect(next.getSingletonKey()).not.toBe(output.getSingletonKey());
       expect(output.diffReport.selected).toBe("unstaged");
       expect(output.diffReport.view.getDiffView()).toBe("side-by-side");
       const staged = await lumine.repositories.executeGit(["diff", "--cached"], workingDirectory);
@@ -303,9 +305,15 @@ describe("git-command", () => {
     editor.setText("changed\n");
     await editor.save();
     await controller.diffCurrentFile();
+    const changed = lumine.workspace.getActivePaneItem();
+    expect(changed).not.toBe(output);
     expect(report.view.getDiffView()).toBe("side-by-side");
-    expect(report.view.props.multiFilePatch.anyPresent()).toBe(true);
-    expect(report.element.querySelector(".git-panel-FilePatchView-header")).not.toBeNull();
+    expect(report.view.props.multiFilePatch.anyPresent()).toBe(false);
+    await changed.diffReport.select("unstaged");
+    expect(changed.diffReport.view.props.multiFilePatch.anyPresent()).toBe(true);
+    expect(
+      changed.diffReport.element.querySelector(".git-panel-FilePatchView-header"),
+    ).not.toBeNull();
     editor.setText("initial\n");
     await editor.save();
     lumine.workspace.getActivePane().activateItem(editor);
