@@ -176,14 +176,22 @@ describe("git-command", () => {
     await list.selectItemById("stage-all");
     const closed = await list.confirmSelection();
     expect(closed.action.disposition).toBe("close");
-    expect(perform).toHaveBeenCalledWith("stage-all", { crumb: "Stage all" });
+    expect(perform.calls.mostRecent().args[0]).toBe("stage-all");
+    expect(perform.calls.mostRecent().args[1].crumb).toBe("Stage all");
+    expect(perform.calls.mostRecent().args[1].event.context.window).toBe(
+      lumine.workspace.getMainWindow(),
+    );
     expect(host.isVisible()).toBe(false);
 
     host.show();
     await list.selectItemById("commit");
     const pushed = await list.confirmSelection();
     expect(pushed.action.disposition).toBe("push");
-    expect(perform).toHaveBeenCalledWith("commit", { crumb: "Commit" });
+    expect(perform.calls.mostRecent().args[0]).toBe("commit");
+    expect(perform.calls.mostRecent().args[1].crumb).toBe("Commit");
+    expect(perform.calls.mostRecent().args[1].event.context.window).toBe(
+      lumine.workspace.getMainWindow(),
+    );
     expect(host.isVisible()).toBe(true);
   });
 
