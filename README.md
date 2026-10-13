@@ -19,6 +19,8 @@ The package is a modern Lumine adaptation of `akonwi/git-plus`, with focused ide
 
 Once confirmed, a Git operation continues if its prompt is closed or replaced. Its completion only updates, closes or reports output for the prompt that still owns it, so a later input or selection keeps its state. Returning through the modal breadcrumb preserves the parent step.
 
+![Browse repository operations from the Git command list.](.github/demo.png)
+
 ## Installation
 
 To install `git-command` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/git-command`.
