@@ -1,16 +1,81 @@
 {
   "menu": [
     {
-      "label": "View",
+      "label": "Git",
       "submenu": [
         {
-          "label": "Open View",
+          "label": "Staging",
+          "group": "changes",
+          "order": 40,
           "submenu": [
             {
-              "label": "Git Commands…",
-              "command": "git-command:show-command-list"
+              "label": "Stage Current File",
+              "command": "git-command:stage-current-file"
+            },
+            {
+              "label": "Stage All",
+              "command": "git-command:stage-all"
+            },
+            {
+              "label": "Unstage Current File",
+              "command": "git-command:unstage-current-file"
+            },
+            {
+              "label": "Unstage All",
+              "command": "git-command:unstage-all"
             }
           ]
+        },
+        {
+          "label": "Commit…",
+          "command": "git-command:commit",
+          "group": "changes",
+          "order": 50
+        },
+        {
+          "label": "Stashes",
+          "group": "changes",
+          "order": 60,
+          "submenu": [
+            {
+              "label": "Stash Changes…",
+              "command": "git-command:stash"
+            },
+            {
+              "label": "Manage Stashes…",
+              "command": "git-command:manage-stashes"
+            }
+          ]
+        },
+        {
+          "label": "Log",
+          "command": "git-command:log",
+          "group": "history",
+          "order": 20
+        },
+        {
+          "label": "New Branch…",
+          "command": "git-command:new-branch",
+          "group": "branches",
+          "order": 10
+        },
+        {
+          "label": "Merge Branch…",
+          "command": "git-command:merge",
+          "group": "branches",
+          "order": 20
+        },
+        {
+          "label": "Push",
+          "command": "git-command:push",
+          "group": "remote",
+          "order": 30
+        },
+        {
+          "label": "Git Commands…",
+          "command": "git-command:show-command-list",
+          "group": "extensions",
+          "order": 10
         }
       ]
     },
@@ -21,7 +86,7 @@
           "label": "Git Command",
           "submenu": [
             {
-              "label": "Show Command List",
+              "label": "Show Command List…",
               "command": "git-command:show-command-list"
             },
             {
@@ -32,11 +97,11 @@
               "command": "git-command:status"
             },
             {
-              "label": "Commit",
+              "label": "Commit…",
               "command": "git-command:commit"
             },
             {
-              "label": "Quick Commit Current File",
+              "label": "Quick Commit Current File…",
               "command": "git-command:quick-commit-current-file"
             },
             {
@@ -59,7 +124,7 @@
               "command": "git-command:push"
             },
             {
-              "label": "Run",
+              "label": "Run Git Command…",
               "command": "git-command:run"
             }
           ]
