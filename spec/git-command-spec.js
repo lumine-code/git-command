@@ -139,6 +139,7 @@ describe("git-command", () => {
     const originatingEditor = await lumine.workspace.open(other.filePath);
     originatingEditor.setText("change in originating editor\n");
     await originatingEditor.save();
+    await other.repository.refreshStatusSnapshot();
     lumine.workspace.getActivePane().activateItem(editor);
     lumine.repositories.setActiveRepository(repository, { pin: true });
     await lumine.commands.dispatch(
