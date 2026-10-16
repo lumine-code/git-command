@@ -163,3 +163,45 @@ describe("Git Command availability", () => {
     expect(lumine.repositories.getForPath).toHaveBeenCalledWith("/project/notebook.ipynb");
   });
 });
+
+describe("Git Command picker availability after repositories close", () => {
+  let main;
+  beforeEach(async () => {
+    jasmine.attachToDOM(lumine.workspace.getElement());
+    main = (await lumine.packages.activatePackage("git-command")).mainModule;
+    spyOn(lumine.repositories, "getRepositories").and.returnValue([]);
+  });
+  afterEach(async () => {
+    await lumine.packages.deactivatePackage("git-command");
+    await lumine.workspace.discardEditorWindows();
+  });
+
+  it("can close its existing list without a repository or document", async () => {
+    const target = lumine.workspace.getElement();
+    const name = "git-command:show-command-list";
+    const load = spyOn(main, "loadController").and.throwError("availability must remain passive");
+    expect(lumine.workspace.getActiveTextEditor()).toBeUndefined();
+    expect(lumine.commands.canDispatch(target, name)).toBe(false);
+    expect(main.commandLists.size).toBe(0);
+    const list = main.ensureCommandList();
+    list.toggle();
+    expect(lumine.commands.canDispatch(target, name)).toBe(true);
+    expect(load).not.toHaveBeenCalled();
+    const invalidate = spyOn(lumine.commands, "invalidateAvailability").and.callThrough();
+    await lumine.commands.dispatch(target, name);
+    expect(list.selectListHost.isVisible()).toBe(false);
+    expect(invalidate).toHaveBeenCalled();
+    expect(lumine.commands.canDispatch(target, name)).toBe(false);
+  });
+
+  it("keeps the visible-list exception inside its own window", async () => {
+    main.ensureCommandList().toggle();
+    const extra = await lumine.workspace.openEditorWindow({ show: false });
+    expect(lumine.commands.canDispatch(extra.getElement(), "git-command:show-command-list")).toBe(
+      false,
+    );
+    expect(
+      lumine.commands.canDispatch(lumine.workspace.getElement(), "git-command:show-command-list"),
+    ).toBe(true);
+  });
+});
