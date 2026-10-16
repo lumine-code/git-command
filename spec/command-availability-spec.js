@@ -87,6 +87,28 @@ describe("Git Command availability", () => {
     expect(isActionAvailable("stash", {})).toBe(true);
   });
 
+  it("refreshes an open stash menu when untracked-file policy changes", async () => {
+    jasmine.attachToDOM(lumine.workspace.getElement());
+    status.counts = { staged: 0, unstaged: 1, conflicted: 0, untracked: 1 };
+    lumine.config.set("git-command.stashIncludeUntracked", false);
+    await lumine.packages.activatePackage("git-command");
+    const popup = lumine.contextMenu.show(lumine.workspace.getElement(), [
+      { label: "Stash", command: "git-command:stash" },
+    ]);
+    try {
+      expect(popup.element.querySelector(".menu-item").getAttribute("aria-disabled")).toBe("true");
+      lumine.config.set("git-command.stashIncludeUntracked", true);
+      expect(lumine.commands.canDispatch(lumine.workspace.getElement(), "git-command:stash")).toBe(
+        true,
+      );
+      await globalThis.flushMicrotasks();
+      expect(popup.element.querySelector(".menu-item").getAttribute("aria-disabled")).toBeNull();
+    } finally {
+      popup.close();
+      await lumine.packages.deactivatePackage("git-command");
+    }
+  });
+
   it("requires known remotes but leaves uninitialized caches loadable", () => {
     expect(isActionAvailable("fetch", {})).toBe(false);
     refs.remotes = [{ name: "origin" }];
