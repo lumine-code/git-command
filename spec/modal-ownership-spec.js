@@ -141,6 +141,27 @@ describe("Git command modal completion ownership", () => {
     expect(controller.modals.inputDialog.getStatus().message).toBe("current checkout failed");
   });
 
+  it("refreshes available branches after each kept-open checkout without clearing the query", async () => {
+    await operations.checkout("main-other", { createNew: true });
+    await operations.checkout("main");
+    await dispatch("checkout");
+    const list = controller.modals.selectList;
+    await list.runAction("select-list:toggle-keep-open");
+    await list.setQuery("main");
+
+    for (const branch of ["main-other", "main"]) {
+      await list.selectItemById(`branch:${branch}`);
+      await list.confirmSelection();
+      expect((await repository.ensureRefsSnapshot()).head.name).toBe(branch);
+      expect(controller.modals.selectListHost.isVisible()).toBe(true);
+      expect(list.getQuery()).toBe("main");
+      expect(list.getItems().map((item) => item.branch)).toEqual([
+        branch === "main" ? "main-other" : "main",
+      ]);
+      expect(list.getSelectedItem().branch).toBe(branch === "main" ? "main-other" : "main");
+    }
+  });
+
   it("does not publish an old commit failure through the dialog handed to its controller callback", async () => {
     const gate = deferred();
     const workflow = spyOn(operations, "runWorkflow").and.returnValue(gate.promise);
@@ -225,6 +246,35 @@ describe("Git command modal completion ownership", () => {
     expect(controller.modals.secondarySelectListHost.isVisible()).toBe(false);
     expect(success).toHaveBeenCalledWith(`Dropped ${stash.reference}`);
   });
+
+  for (const operation of ["stashPop", "stashDrop"]) {
+    it(`completes ${operation} before a renumbered stash can be consumed again`, async () => {
+      for (const message of ["older stash", "newer stash"]) {
+        fs.writeFileSync(path.join(directory, "initial.txt"), `${message}\n`);
+        await operations.stashPush({ message });
+      }
+      const performed = spyOn(operations, operation).and.callThrough();
+      await dispatch("manage-stashes");
+      expect(controller.modals.selectList.supportsKeepOpen()).toBe(false);
+      await controller.modals.selectList.confirmSelection();
+      const list = controller.modals.secondarySelectList;
+      expect(list.supportsKeepOpen()).toBe(false);
+      expect(() => list.setKeepOpen(true)).toThrow();
+      await list.selectItemById(`action:${operation}`);
+      const action = list.getSelectedItem();
+      await list.confirmSelection();
+      expect(controller.modals.secondarySelectListHost.isVisible()).toBe(false);
+      expect(controller.modals.pendingSecondarySelection).toBeNull();
+
+      await controller.modals.confirmSecondarySelection(action);
+      expect(performed).toHaveBeenCalledTimes(1);
+      const remaining = await operations.executeGit(["stash", "list", "--format=%s"], {
+        readOnly: true,
+      });
+      expect(remaining.stdout).toContain("older stash");
+      expect(remaining.stdout).not.toContain("newer stash");
+    });
+  }
 
   it("keeps a newer nested stash step after an older confirmed drop finishes", async () => {
     fs.writeFileSync(path.join(directory, "initial.txt"), "stash me\n");
