@@ -1,9 +1,9 @@
 {
   "title": "git-command",
   "description": "Browse repository operations from the Git command list.",
-  "recordedOn": "2026-10-14",
-  "sourceRevision": "0098ccea6ea9a28944d98eb4d4a9f1a66c7be3b3",
-  "themeSourceRevision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+  "recordedOn": "2026-10-18",
+  "sourceRevision": "da229a6758ee31cc0000c29666f86232f4cb5005",
+  "themeSourceRevision": "45b22049e87256e9327beb0b350e67fe81d7fc81",
   "mode": "normal",
   "fontSettings": "default",
   "scenario": "demo.js",
@@ -11,8 +11,8 @@
   "environment": {
     "platform": "win32",
     "arch": "x64",
-    "electron": "44.7.0",
-    "chrome": "152.0.7977.130",
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
     "devicePixelRatio": 1,
     "locale": "en-GB",
     "fontFamily": "Fira Code, Menlo, DejaVu Sans Mono, Consolas, monospace",
@@ -21,34 +21,35 @@
   },
   "viewport": { "width": 1200, "height": 600 },
   "cornerRadius": 10,
+  "privacy": { "version": 1, "location": "neutral", "textChecked": true },
   "sources": {
     "editor": {
-      "revision": "8be8f86075ad93df038610d82b3ac6d99329957d",
-      "dirty": true,
-      "workingTreeHash": "0a9458f6e3959fe7a52b2fec76abef27dcbaa9792f192b81ac1e3f6b2be82009"
+      "revision": "10950c83cb6d964aadbcf4036af67c6484c1341d",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "package": {
-      "revision": "0098ccea6ea9a28944d98eb4d4a9f1a66c7be3b3",
+      "revision": "da229a6758ee31cc0000c29666f86232f4cb5005",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "git-command": {
-      "revision": "0098ccea6ea9a28944d98eb4d4a9f1a66c7be3b3",
+      "revision": "da229a6758ee31cc0000c29666f86232f4cb5005",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "language-javascript": {
-      "revision": "ae2e6968e3a349fb4d09ce53e339a0f8cce903aa",
+      "revision": "721d40ef20e4ffda4125b375f50c908541fa7c08",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "one-theme": {
-      "revision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+      "revision": "45b22049e87256e9327beb0b350e67fe81d7fc81",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "tree-view": {
-      "revision": "fe6f35de06f036837aa9c2d3b138b3d72557bcc4",
+      "revision": "c1781b2f9680b1079e9c583431aed03e5b0992a3",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     }
@@ -65,7 +66,7 @@
       "label": "Browse repository operations from the Git command list.",
       "width": 1200,
       "height": 600,
-      "sha256": "76a87e437ad0d1ecafe9cfa60fb35bfa3a5d1125b5373b292d4a57408085d3ef"
+      "sha256": "919bef6eb1c9f58d0854f825fe6141e5ebe248b7c9bee90c8801b2900b2d6ac0"
     }
   ]
 }
